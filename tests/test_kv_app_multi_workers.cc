@@ -33,6 +33,7 @@ void RunWorker(int customer_id) {
     ts.push_back(kv.Push(keys, vals));
 
     // to avoid too frequency push, which leads huge memory usage
+	// 一次最多先push 10个, 然后等待
     if (i > 10) kv.Wait(ts[ts.size()-10]);
   }
   for (int t : ts) kv.Wait(t);
@@ -64,12 +65,15 @@ int main(int argc, char *argv[]) {
   // start system
   bool isWorker = (strcmp(argv[1], "worker") == 0);
   if (!isWorker) {
+	// 启动Server时的分支
     Start(0);
     // setup server nodes
     StartServer();
     Finalize(0, true);
     return 0;
   }
+
+  // 启动Worker时的分支
   // run worker nodes
   std::thread t0(RunWorker, 0);
   std::thread t1(RunWorker, 1);
